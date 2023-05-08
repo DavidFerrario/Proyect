@@ -1,0 +1,6 @@
+com\productos\exceptions\ResponseError.class
+com\productos\services\ProductoService.class
+com\productos\models\Producto.class
+com\productos\Application.class
+com\productos\repositories\ProductoRepository.class
+com\productos\controllers\ProductoController.class
