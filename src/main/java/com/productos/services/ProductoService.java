@@ -1,5 +1,6 @@
 package com.productos.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,93 +11,81 @@ import org.springframework.stereotype.Service;
 
 import com.productos.models.Producto;
 import com.productos.repositories.ProductoRepository;
+
 @Service
-public class ProductoService<E> {
-	
-	@Autowired
-	ProductoRepository productoRepository;
-	
-	public List<Producto> getAllProductos() {
-		return productoRepository.findAll();
-	}
-	
-	public Page<E> getAllProductosPaginados(Pageable pageable) {
-		return productoRepository.findAll(pageable);
-	}
+public class ProductoService {
 
-	public List<Producto> getAllProductosOrdenado() {
-		return productoRepository.productoOrdenado();
-	}
-	
-	public Optional<Producto> getProductoActivoPorId(String id) throws Throwable  { // REFLAJAR CON UN NOMBRE CORRECTO EL FUNCIONAMIENTO DEL ID
-		
-		Optional<Producto> productoBuscado =  productoRepository.findById(id);
-		
-		if(productoBuscado.isPresent()){
-			if(productoBuscado.get().isActivo()) {
-				return productoBuscado;
-			}else {
-				throw new Exception("El producto fue dado de baja");
-			}
-		}else {
-			throw new Exception("El producto no figura en nuestra base de datos");
-		}
-	}
+    public static final String PRODUCTO_DE_PRUEBA = "Producto de prueba";
+    public static final float PRECIO_BASE = 5;
+    public static final String DESCRIPCION_DE_PRUEBA = "Descripcion de prueba";
+    public static final String CODIGO_DE_PRUEBA = "codigo de prueba";
+    @Autowired
+    ProductoRepository productoRepository;
 
-	
-public List<Producto> getProductoPorNombre(String nombre) throws Throwable  {
-		
-		List<Producto> productosBuscado = productoRepository.findBynombreContains(nombre); //CAMELCASE
-		
-		if(!productosBuscado.isEmpty()){
-			
-				return productosBuscado;
-			}else {
-				throw new Exception("El producto fue dado de baja");
-			}
-		
-	}
-	
-	
-	public void saveProducto(Producto producto) {
-		productoRepository.save(producto);
-		
-	}
-	
+    public List<Producto> getAllProductos() {
+        return productoRepository.findAll();
+    }
 
-	public void deleteProducto(String id) throws Throwable {
-		Optional<Producto> productoBuscado = this.getProductoActivoPorId(id);
-		productoBuscado.get().setActivo(false);
-		this.saveProducto(productoBuscado.get());
-		
-		
-	}
+    public Page<Producto> getAllProductosPaginados(Pageable pageable) {
+        return productoRepository.findAll(pageable);
+    }
+
+    public List<Producto> getAllProductosOrdenado() {
+        return productoRepository.productoOrdenado();
+    }
+
+    public Producto getProductoActivoPorId(String id) { // REFLAJAR CON UN NOMBRE CORRECTO EL FUNCIONAMIENTO DEL ID
+        Producto producto = new Producto();
+        Optional<Producto> productoBuscado = productoRepository.findById(id);
+        if (productoBuscado.isPresent()) {
+            if (productoBuscado.get().isActivo()) {
+                producto = productoBuscado.get();
+            }
+        }
+        return producto;
+    }
 
 
-	public void editProducto(String id, String nombre,String descripcion,float precio,int cantidad) throws Throwable {
-		Optional<Producto> productoBuscado = this.getProductoActivoPorId(id);
-		Producto producto = new Producto();
-		if(productoBuscado.isPresent()) {
-			producto.setIdProducto(productoBuscado.get().getIdProducto());
-			producto.setNombre(nombre);
-			producto.setDescripcion(descripcion);
-			producto.setPrecio(precio);
-			producto.setCantidad(cantidad);
-			this.saveProducto(producto);
-		}		
-		
-	}
-	
-	public void crearProductosDePrueba(Integer cantidadDeProductosFicticios) {
-		float precioBase = 5;
-		for (int i = 0; i <cantidadDeProductosFicticios;  i++) {
-		Producto producto = new Producto("a"+i,"Producto de prueba"+i,"Descripcion de prueba"+i,precioBase+i,i,true);
-		this.saveProducto(producto);
-		}
-		
-		
-	}
-		
-	}
+    public List<Producto> getProductoPorNombre(String nombre) {
+        List<Producto> productos = new ArrayList<>();
+        List<Producto> productosBuscado = productoRepository.findBynombreContains(nombre); //CAMELCASE
+        if (!productosBuscado.isEmpty()) {
+            productos = productosBuscado;
+        }
+        return productos;
+
+    }
+
+
+    public Producto saveProducto(Producto producto) {
+        return productoRepository.save(producto);
+
+    }
+
+
+    public Producto deleteProducto(String id) {
+        Producto productoBuscado = this.getProductoActivoPorId(id);
+        productoBuscado.setActivo(false);
+        return this.saveProducto(productoBuscado);
+    }
+
+    public Producto editProducto(Producto producto) {
+        Producto productoBuscado = this.getProductoActivoPorId(producto.getIdProducto());
+        if (productoBuscado != null) {
+            producto = this.saveProducto(producto);
+        }
+        return producto;
+    }
+
+    public List<Producto> crearProductosDePrueba(Integer cantidadDeProductosFicticios) {
+        List<Producto> productos = new ArrayList<>();
+        for (int i = 0; i < cantidadDeProductosFicticios; i++) {
+            Producto producto = new Producto(CODIGO_DE_PRUEBA + i, PRODUCTO_DE_PRUEBA + i, DESCRIPCION_DE_PRUEBA + i, PRECIO_BASE + i, i, true);
+            this.saveProducto(producto);
+            productos.add(producto);
+        }
+        return productos;
+    }
+}
 
 
